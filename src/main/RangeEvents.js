@@ -4,7 +4,7 @@ define(function(require) {
   var DateRange = require('./DateRange')
   var DateTime = require('./DateTime')
 
-  return function(container, calendarBody, executeCallback, locale, params, getElemDate, calendar, startDate,
+  return function(container, calendarBody, executeCallback, locale, params, getElemDate, calendar, startDate, templates,
                   endDate, calendarRange, setStartField, setEndField, formatDate, disabledDatesList) {
     var mouseDownDate = null
     var selection
@@ -15,6 +15,7 @@ define(function(require) {
       NONE            : 'none'
     }
     var status = Status.NONE
+    var Template = templates
 
     return {
       showInitialSelection: setRangeLabels,
@@ -34,17 +35,17 @@ define(function(require) {
 
     function addRangeLengthLabel() {
       if($('.rangeLengthLabel', container).isEmpty()) {
-        var rangeLengthContainer = $('<div class="label"><span class="rangeLengthLabel"></span></div>')
+        var rangeLengthContainer = $(Template.lengthLabel())
         $('.continuousCalendar', container).append(rangeLengthContainer)
       }
     }
 
-    function addEndDateLabel(dateLabelContainer) { dateLabelContainer.append('<span class="separator"> - </span>').append('<span class="endDateLabel"></span>') }
+    function addEndDateLabel(dateLabelContainer) { dateLabelContainer.append(Template.separator()).append(Template.endDateLabel()) }
 
     function addDateClearingLabel() {
       if(params.allowClearDates) {
-        var dateClearingLabel = $('<span class="clearDates clickable"></span>').text(locale.clearRangeLabel)
-        var dateClearingContainer = $('<div class="label clearLabel"></div>').append(dateClearingLabel)
+        var dateClearingLabel = $(Template.clearDates()).text(locale.clearRangeLabel)
+        var dateClearingContainer = $(Template.clearLabel()).append(dateClearingLabel)
         $('.continuousCalendar', container).append(dateClearingContainer)
       }
     }
