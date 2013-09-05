@@ -38,7 +38,8 @@ define(function(require) {
           sizethumb: 'auto'
         },
         theme          : '',
-        allowClearDates: false
+        allowClearDates: false,
+        selectByDrag   : true
       }
       var params = $.extend({}, defaults, options)
       if (options) {
@@ -141,7 +142,7 @@ define(function(require) {
 
       function dateBehaviour(isRange) {
         var basicParams = [container, calendarBody, executeCallback, locale, params, getElemDate, popupBehavior, startDate, params.templates]
-        var rangeParams = [endDate, calendarRange, setStartField, setEndField, formatDate, disabledDatesList]
+        var rangeParams = [endDate, calendarRange, setStartField, setEndField, formatDate, disabledDatesList, params.selectByDrag]
         return isRange ? RangeEvents.apply(null, basicParams.concat(rangeParams)) : SingleDateEvents.apply(null, basicParams)
       }
 

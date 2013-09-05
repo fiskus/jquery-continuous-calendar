@@ -34,6 +34,6 @@ require(['jquery', '../src/main/jquery.continuousCalendar', '../src/main/DateFor
     scrollContent: function() {return '<div class="calendarScrollContent" style="width: 416px; height: 200px;" />'},
     weekCell: function() {return ''}
   }
-  $("#redefinedTemplates").continuousCalendar({templates: templates})
+  $("#redefinedTemplates").continuousCalendar({firstDate: "2/15/2007", lastDate: "9/10/2009", templates: templates})
+  $("#selectByClickAndMove").continuousCalendar({firstDate: "2/15/2007", lastDate: "9/10/2009", templates: templates, selectByDrag: false})
 })
-

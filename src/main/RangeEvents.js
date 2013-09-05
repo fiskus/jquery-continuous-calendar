@@ -5,7 +5,7 @@ define(function(require) {
   var DateTime = require('./DateTime')
 
   return function(container, calendarBody, executeCallback, locale, params, getElemDate, calendar, startDate, templates,
-                  endDate, calendarRange, setStartField, setEndField, formatDate, disabledDatesList) {
+                  endDate, calendarRange, setStartField, setEndField, formatDate, disabledDatesList, selectByDrag) {
     var mouseDownDate = null
     var selection
     var oldSelection
@@ -68,68 +68,99 @@ define(function(require) {
         $('span.clearDates', container).click(clearRangeClick)
       }
       bodyTable.addClass(params.selectWeek ? 'weekRange' : 'freeRange')
-      /*bodyTable.mousedown(mouseDown).mouseover(mouseMove).mouseup(mouseUp)*/
-      bodyTable.mouseover(mouseMove).mouseup(mouseUp)
+      if (selectByDrag) {
+        bodyTable.mousedown(mouseDown).mouseover(mouseMove).mouseup(mouseUp)
+      } else {
+        bodyTable.mouseover(mouseMove).mouseup(mouseUp)
+      }
       disableTextSelection(bodyTable.get(0))
+    }
+
+    function makeSelection() {
+      if(rangeHasDisabledDate()) selection = DateRange.emptyRange()
+      drawSelection()
+      afterSelection()
+    }
+
+    function startSelection(cell, isShift) {
+      function enabledCell(elem) { return isDateCell(elem) && isEnabled(elem) }
+
+      function isInstantSelection(elem, hasShiftKeyPressed) {
+        if(params.selectWeek) return enabledCell(elem) || isWeekCell(elem)
+        else return isWeekCell(elem) || isMonthCell(elem) || hasShiftKeyPressed
+      }
+
+      if(isInstantSelection(cell, isShift)) {
+        selection = instantSelection(cell, isShift)
+      } else {
+        status = Status.CREATE_OR_RESIZE
+        mouseDownDate = getElemDate(cell)
+        if(mouseDownDate.equalsOnlyDate(selection.end)) mouseDownDate = selection.start
+        else if(mouseDownDate.equalsOnlyDate(selection.start)) mouseDownDate = selection.end
+        else if(selection.hasDate(mouseDownDate)) status = Status.MOVE
+        else if(enabledCell(cell)) startNewRange()
+      }
+
+      function instantSelection(elem, hasShiftKeyPressed) {
+        if((params.selectWeek && enabledCell(elem)) || isWeekCell(elem)) {
+          status = Status.NONE
+          var firstDayOfWeek = getElemDate($(elem).parent().children('.date').get(0))
+          return instantSelectWeek(firstDayOfWeek)
+        } else if(isMonthCell(elem)) {
+          status = Status.NONE
+          var dayInMonth = getElemDate($(elem).siblings('.date').get(0))
+          return new DateRange(dayInMonth.firstDateOfMonth(), dayInMonth.lastDateOfMonth(), locale)
+        } else if(hasShiftKeyPressed) {
+          if(selection.days() > 0 && enabledCell(elem)) {
+            status = Status.NONE
+            selection = selection.expandTo(getElemDate(elem))
+            return selection
+          }
+        }
+        return selection
+      }
+
+      function instantSelectWeek(firstDayOfWeek) {
+        var firstDay = firstDayOfWeek
+        var lastDay = firstDayOfWeek.plusDays(6)
+        if(params.disableWeekends) {
+          firstDay = firstDayOfWeek.withWeekday(DateTime.MONDAY)
+          lastDay = firstDayOfWeek.withWeekday(DateTime.FRIDAY)
+        }
+        return new DateRange(firstDay, lastDay, locale).and(calendarRange)
+      }
+    }
+
+    function processSelection(cell) {
+      var date = getElemDate(cell)
+      var actions = {
+        move:   function() {
+          var deltaDays = mouseDownDate.distanceInDays(date)
+          var movedSelection = selection.shiftDays(deltaDays).and(calendarRange)
+          if (isPermittedRange(movedSelection)) {
+            mouseDownDate = date
+            selection = movedSelection
+          }
+        },
+        create: function() {
+          var newSelection = new DateRange(mouseDownDate, date, locale)
+          if (isEnabled(cell) && isPermittedRange(newSelection)) selection = newSelection
+        }
+      }
+      actions[status]()
+      drawSelection()
+    }
+
+    function mouseDown(event) {
+      startSelection(event.target, event.shiftKey)
     }
 
     function mouseUp(event) {
       if (status === Status.CREATE_OR_RESIZE) {
         status = Status.NONE
-        if(rangeHasDisabledDate()) selection = DateRange.emptyRange()
-        drawSelection()
-        afterSelection()
+        makeSelection()
       } else {
-        function enabledCell(elem) { return isDateCell(elem) && isEnabled(elem) }
-
-        function isInstantSelection(elem, hasShiftKeyPressed) {
-          if(params.selectWeek) return enabledCell(elem) || isWeekCell(elem)
-          else return isWeekCell(elem) || isMonthCell(elem) || hasShiftKeyPressed
-
-        }
-
-        var elem = event.target
-        var hasShiftKeyPressed = event.shiftKey
-
-        if(isInstantSelection(elem, hasShiftKeyPressed)) {
-          selection = instantSelection(elem, hasShiftKeyPressed)
-        } else {
-          status = Status.CREATE_OR_RESIZE
-          mouseDownDate = getElemDate(elem)
-          if(mouseDownDate.equalsOnlyDate(selection.end)) mouseDownDate = selection.start
-          else if(mouseDownDate.equalsOnlyDate(selection.start)) mouseDownDate = selection.end
-          else if(selection.hasDate(mouseDownDate)) status = Status.MOVE
-          else if(enabledCell(elem)) startNewRange()
-        }
-
-        function instantSelection(elem, hasShiftKeyPressed) {
-          if((params.selectWeek && enabledCell(elem)) || isWeekCell(elem)) {
-            status = Status.NONE
-            var firstDayOfWeek = getElemDate($(elem).parent().children('.date').get(0))
-            return instantSelectWeek(firstDayOfWeek)
-          } else if(isMonthCell(elem)) {
-            status = Status.NONE
-            var dayInMonth = getElemDate($(elem).siblings('.date').get(0))
-            return new DateRange(dayInMonth.firstDateOfMonth(), dayInMonth.lastDateOfMonth(), locale)
-          } else if(hasShiftKeyPressed) {
-            if(selection.days() > 0 && enabledCell(elem)) {
-              status = Status.NONE
-              selection = selection.expandTo(getElemDate(elem))
-              return selection
-            }
-          }
-          return selection
-        }
-
-        function instantSelectWeek(firstDayOfWeek) {
-          var firstDay = firstDayOfWeek
-          var lastDay = firstDayOfWeek.plusDays(6)
-          if(params.disableWeekends) {
-            firstDay = firstDayOfWeek.withWeekday(DateTime.MONDAY)
-            lastDay = firstDayOfWeek.withWeekday(DateTime.FRIDAY)
-          }
-          return new DateRange(firstDay, lastDay, locale).and(calendarRange)
-        }
+        startSelection(event.target, event.shiftKey)
       }
     }
 
@@ -145,25 +176,10 @@ define(function(require) {
     }
 
     function mouseMove(event) {
-      if (status !== Status.NONE) {
-        var date = getElemDate(event.target)
-        var actions = {
-          move:   function() {
-            var deltaDays = mouseDownDate.distanceInDays(date)
-            var movedSelection = selection.shiftDays(deltaDays).and(calendarRange)
-            if (isPermittedRange(movedSelection)) {
-              mouseDownDate = date
-              selection = movedSelection
-            }
-          },
-          create: function() {
-            var newSelection = new DateRange(mouseDownDate, date, locale)
-            if (isEnabled(event.target) && isPermittedRange(newSelection)) selection = newSelection
-          }
-        }
-        actions[status]()
-        drawSelection()
+      if (status == Status.NONE) {
+        return
       }
+      processSelection(event.target)
     }
 
     function isPermittedRange(newSelection) { return newSelection.isPermittedRange(params.minimumRange, params.disableWeekends, calendarRange) }
