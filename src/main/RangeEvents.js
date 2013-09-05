@@ -68,11 +68,11 @@ define(function(require) {
         $('span.clearDates', container).click(clearRangeClick)
       }
       bodyTable.addClass(params.selectWeek ? 'weekRange' : 'freeRange')
-      if (selectByDrag) {
+      //if (selectByDrag) {
         bodyTable.mousedown(mouseDown).mouseover(mouseMove).mouseup(mouseUp)
-      } else {
-        bodyTable.mouseover(mouseMove).mouseup(mouseUp)
-      }
+      //} else {
+      //  bodyTable.mouseover(mouseMove).mouseup(mouseUp)
+      //}
       disableTextSelection(bodyTable.get(0))
     }
 
@@ -152,14 +152,19 @@ define(function(require) {
     }
 
     function mouseDown(event) {
-      startSelection(event.target, event.shiftKey)
+      if (selectByDrag || isWeekCell(event.target) || isMonthCell(event.target) || event.shiftKey) {
+        startSelection(event.target, event.shiftKey)
+      }
     }
 
     function mouseUp(event) {
-      if (status === Status.CREATE_OR_RESIZE) {
+      if (status === Status.CREATE_OR_RESIZE && !selectByDrag) {
         status = Status.NONE
         makeSelection()
-      } else {
+      } else if (selectByDrag || isWeekCell(event.target) || isMonthCell(event.target) || event.shiftKey) {
+        status = Status.NONE
+        makeSelection()
+      } else if (status === Status.NONE && !selectByDrag) {
         startSelection(event.target, event.shiftKey)
       }
     }
