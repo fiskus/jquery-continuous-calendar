@@ -68,11 +68,7 @@ define(function(require) {
         $('span.clearDates', container).click(clearRangeClick)
       }
       bodyTable.addClass(params.selectWeek ? 'weekRange' : 'freeRange')
-      //if (selectByDrag) {
-        bodyTable.mousedown(mouseDown).mouseover(mouseMove).mouseup(mouseUp)
-      //} else {
-      //  bodyTable.mouseover(mouseMove).mouseup(mouseUp)
-      //}
+      bodyTable.mousedown(mouseDown).mouseover(mouseMove).mouseup(mouseUp)
       disableTextSelection(bodyTable.get(0))
     }
 
