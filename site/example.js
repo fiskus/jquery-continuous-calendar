@@ -35,5 +35,12 @@ require(['jquery', '../src/main/jquery.continuousCalendar', '../src/main/DateFor
     weekCell: function() {return ''}
   }
   $("#redefinedTemplates").continuousCalendar({firstDate: "2/15/2007", lastDate: "9/10/2009", templates: templates})
+
+  var templatesUnderscore = {
+    weekCell: _.template('<th class="week <%= classNames %>"><%= content %></th>'),
+    bodyRow: _.template('<tr><%= content %></tr>')
+  }
+  $("#redefinedTemplatesUnderscore").continuousCalendar({templates: templatesUnderscore})
+
   $("#selectByClickAndMove").continuousCalendar({firstDate: "2/15/2007", lastDate: "9/10/2009", selectByDrag: false})
 })
