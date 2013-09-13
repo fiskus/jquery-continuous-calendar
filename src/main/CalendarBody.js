@@ -3,8 +3,7 @@ define(function(require) {
   var DateFormat = require('./DateFormat')
   var DateTime = require('./DateTime')
 
-  return function(calendarContainer, calendarRange, locale, customScroll, disableWeekends, disabledDatesObject, templates) {
-    var Template = templates
+  return function(calendarContainer, calendarRange, locale, customScroll, disableWeekends, disabledDatesObject, Template) {
     var dateCellMap = {}
     var dateCellDates = []
 
@@ -66,9 +65,7 @@ define(function(require) {
         firstWeekDay = firstWeekDay.plusDays(7)
       }
 
-      return Template.tbody({
-        rows: rows.join('')
-      })
+      return Template.tbody({ rows: rows.join('') })
 
       function calendarRow(firstDayOfWeek, isFirst) {
         var contentArray = []
@@ -78,9 +75,7 @@ define(function(require) {
           var date = firstDayOfWeek.plusDays(i)
           contentArray.push(dateCell(date))
         }
-        return Template.bodyRow({
-          content: contentArray.join('')
-        })
+        return Template.bodyRow({ content: contentArray.join('') })
       }
 
       function dateCell(date) {
@@ -103,10 +98,7 @@ define(function(require) {
         } else if(firstDayOfWeek.getDate() <= 7 * 2 && firstDayOfWeek.getMonth() === 1) {
           content = firstDayOfWeek.getFullYear()
         }
-        return Template._monthCell({
-          classNames: classNames,
-          content: content
-        })
+        return Template._monthCell({ classNames: classNames, content: content })
       }
 
       function weekCell(firstDayOfWeek) {
