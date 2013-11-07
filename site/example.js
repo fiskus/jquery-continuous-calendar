@@ -42,5 +42,5 @@ require(['jquery', '../src/main/jquery.continuousCalendar', '../src/main/DateFor
   }
   $("#redefinedTemplatesUnderscore").continuousCalendar({templates: templatesUnderscore})
 
-  $("#selectByClickAndMove").continuousCalendar({firstDate: "2/15/2007", lastDate: "9/10/2009", selectByDrag: false})
+  $("#selectByClickAndMove").continuousCalendar({firstDate: "2/15/2007", lastDate: "9/10/2009", selectByDrag: false, minimumRange: '2'})
 })

@@ -5,13 +5,13 @@ define(function(require) {
   var DateTime = require('./DateTime')
 
   return function(container, calendarBody, executeCallback, locale, params, getElemDate, calendar, startDate, Template,
-                  endDate, calendarRange, setStartField, setEndField, formatDate, disabledDatesList) {
+                  endDate, calendarRange, setStartField, setEndField, formatDate, disabledDatesList, selectByDrag) {
     var mouseDownDate = null
     var selection
     var oldSelection
     var Status = {
       CREATE_OR_RESIZE: 'create',
-      MOVE            : 'move',
+      //MOVE            : 'move',
       NONE            : 'none'
     }
     var status = Status.NONE
@@ -90,10 +90,13 @@ define(function(require) {
       } else {
         status = Status.CREATE_OR_RESIZE
         mouseDownDate = getElemDate(cell)
+        startNewRange(mouseDownDate)
+        /*
         if(mouseDownDate.equalsOnlyDate(selection.end)) mouseDownDate = selection.start
         else if(mouseDownDate.equalsOnlyDate(selection.start)) mouseDownDate = selection.end
         else if(selection.hasDate(mouseDownDate)) status = Status.MOVE
         else if(enabledCell(cell)) startNewRange()
+        */
       }
 
       function instantSelection(elem, hasShiftKeyPressed) {
